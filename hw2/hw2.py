@@ -6,7 +6,7 @@ import numpy as np
 from collections import OrderedDict
 
 
-def check_4_circle_points(buf_img, i, j, threshold):
+def check_4_circle_points(buf_img, i, j, threshold, radius=3):
     '''Function for checking only 1, 5, 9, 13 pixels.
     Input:
         buf_img - np.array, input image in grayscale
@@ -16,8 +16,10 @@ def check_4_circle_points(buf_img, i, j, threshold):
     Output:
         bool, True if 3 from 4 pixels are darker or brighter, else False
     '''
-    points = [buf_img[i-3][j], buf_img[i+3][j],
-              buf_img[i][j-3], buf_img[i][j+3]]
+    points = [buf_img[np.clip(i-radius, 0, buf_img.shape[0]-1)][j],
+              buf_img[np.clip(i+radius, 0, buf_img.shape[0]-1)][j],
+              buf_img[i][np.clip(j-radius, 0, buf_img.shape[1]-1)],
+              buf_img[i][np.clip(j+radius, 0, buf_img.shape[1]-1)]]
     darker = 0
     similar = 0
     brighter = 0
@@ -34,7 +36,7 @@ def check_4_circle_points(buf_img, i, j, threshold):
         return False
 
 
-def check_n_points(buf_img, i, j, threshold, n):
+def check_n_points(buf_img, i, j, threshold, n, radius=3):
     '''Function for checking 16 pixels.
     Input:
         buf_img - np.array, input image in grayscale
@@ -45,29 +47,37 @@ def check_n_points(buf_img, i, j, threshold, n):
     Output:
         bool, True if n pixels are darker or brighter, else False
     '''
-    points = [buf_img[i-3][j], buf_img[i-3][j-1], buf_img[i-3][j+1],
-              buf_img[i+3][j], buf_img[i+3][j-1], buf_img[i+3][j+1],
-              buf_img[i][j-3], buf_img[i+1][j-3], buf_img[i-1][j-3],
-              buf_img[i][j+3], buf_img[i-1][j+3], buf_img[i+1][j+3],
-              buf_img[i-2][j-2], buf_img[i-2][j+2], buf_img[i+2][j-2],
-              buf_img[i+2][j+2]]
     darker = 0
     similar = 0
     brighter = 0
-    for point in points:
+    for k in range(i - radius, i + radius + 1):
+        y_off = np.sqrt(radius ** 2 - (k - i) ** 2)
+        y1 = np.clip(np.int32(np.round(j - y_off)), 0, buf_img.shape[1]-1)
+        y2 = np.clip(np.int32(np.round(j + y_off)), 0, buf_img.shape[1]-1)
+        k_clip = np.clip(k, 0, buf_img.shape[0]-1)
+        point = buf_img[k_clip][y1]
         if point < buf_img[i][j] - threshold:
             darker += 1
         elif point > buf_img[i][j] + threshold:
             brighter += 1
         else:
             similar += 1
+        point = buf_img[k_clip][y2]
+        if point < buf_img[i][j] - threshold:
+            darker += 1
+        elif point > buf_img[i][j] + threshold:
+            brighter += 1
+        else:
+            similar += 1
+        if darker >= n or brighter >= n:
+            return True
     if darker >= n or brighter >= n:
         return True
     else:
         return False
 
 
-def fast(img, threshold=20, n=9):
+def fast(img, threshold=20, n=12):
     ''' FAST feature detector.
     Input:
         img - np.array, input image
@@ -123,7 +133,7 @@ def get_top_n_points(img, special_points, window_size=3, k=0.05, top_n=1000):
         # measures[point] = (l1 - k_prime * l2) * (l2 - k_prime * l1)
     measures = {k: v for k, v in sorted(measures.items(),
                                         key=lambda item: item[1])}
-    measures = list(measures.keys())[:top_n]
+    measures = list(measures.keys())[-top_n:]
     return measures
 
 
