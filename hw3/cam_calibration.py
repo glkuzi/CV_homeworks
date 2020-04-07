@@ -60,6 +60,8 @@ def main():
     ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
     print('Camera matrix', mtx)
     print('Distortion coefficients', dist)
+    print(rvecs)
+    print(tvecs)
     # calculate accuracy of obtained coeffs
     mean_error = 0
     for i in range(len(objpoints)):
