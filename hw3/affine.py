@@ -286,7 +286,7 @@ def shear3d(img, sxy=0.0, sxz=0.0, syx=0.0, syz=0.0, szx=0.0, szy=0.0):
 
 def main():
     img_path = './dragonfly.jpg'
-    path_3d = './image-depth/d-1316653648.611579-1109571627.pgm'
+    path_3d = './original.pgm'
     # path_3d = './image-depth/r-1316653580.484909-1316500621.ppm'
     img = cv2.imread(img_path)
     img3d = cv2.imread(path_3d, cv2.IMREAD_UNCHANGED)

@@ -40,7 +40,7 @@ def main():
     # Arrays to store object points and image points from all the images.
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
-    images = glob.glob('./calib/*.png')
+    images = glob.glob('./calib/img*.png')
     for fname in images:
         img = cv.imread(fname)
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -53,8 +53,8 @@ def main():
             imgpoints.append(corners)
             # Draw and display the corners
             cv.drawChessboardCorners(img, (9,6), corners2, ret)
-            cv.imshow('img', img)
-            cv.waitKey(500)
+            #cv.imshow('img', img)
+            #cv.waitKey(500)
     cv.destroyAllWindows()
     # get camera data
     ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
@@ -69,8 +69,8 @@ def main():
         error = cv.norm(imgpoints[i], imgpoints2, cv.NORM_L2)/len(imgpoints2)
         mean_error += error
     print( "total error: {}".format(mean_error/len(objpoints)) )
-    '''
-    img = cv.imread('test0.png')
+    
+    img = cv.imread('./calib/test0.png')
     h,  w = img.shape[:2]
     newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1, (w,h))
     # undistort
@@ -78,8 +78,8 @@ def main():
     # crop the image
     x, y, w, h = roi
     dst = dst[y:y+h, x:x+w]
-    cv.imwrite('calibresult.png', dst)
-    '''
+    cv.imwrite('./calib/calibresult.png', dst)
+    
 
 
 if __name__ == '__main__':

@@ -63,7 +63,7 @@ def get_p_matrices(K1, K2, doffs):
     return P1, P2, F
 
 
-def find_closest_point(img1, img2, x, y, window_size=5, thr=None):
+def find_closest_point(img1, img2, x, y, window_size=3, thr=None):
     '''Find most 'similar' to (x, y) point on img2.
     Input:
         img1 - np.array, first image
@@ -131,7 +131,7 @@ def main():
     path2 = folder + '/im1.png'
     img1 = cv2.imread(path1)
     img2 = cv2.imread(path2)
-    sf = 8
+    sf = 4
     # img1 = img1[970:1120, 1260:1400]
     # img2 = img2[970:1120, 1094:1234]
     img1 = cv2.resize(img1, (img1.shape[1]//sf, img1.shape[0]//sf))
@@ -140,18 +140,28 @@ def main():
     cv2.imshow('im2', img2)
 
     disp_map = np.zeros((img1.shape[0], img1.shape[1]), dtype=np.int32)
-
     for x1 in tqdm(range(img1.shape[1])):
         for y1 in range(img1.shape[0]):
             x2, y2 = find_closest_point(img1, img2, x1, y1)
             disp_map[y1][x1] = x2-x1
 
+    n_map = np.array(disp_map + np.min(disp_map), dtype=np.uint8)
+    dmap = disp_to_z(disp_map, baseline, f, doffs)
+    ndmap = np.array(dmap, dtype=np.uint16)
+    cv2.imwrite('dmap_0_w5_big.pgm', ndmap)
+    cv2.imwrite('disp_0_w5_big.pgm', n_map)
+
+    disp_map = np.zeros((img2.shape[0], img2.shape[1]), dtype=np.int32)
+    for x1 in tqdm(range(img2.shape[1])):
+        for y1 in range(img2.shape[0]):
+            x2, y2 = find_closest_point(img2, img1, x1, y1)
+            disp_map[y1][x1] = x2-x1
     # print(np.max(disp_map), np.min(disp_map))
     n_map = np.array(disp_map + np.min(disp_map), dtype=np.uint8)
     dmap = disp_to_z(disp_map, baseline, f, doffs)
     ndmap = np.array(dmap, dtype=np.uint16)
-    cv2.imwrite('dmap_w5.pgm', ndmap)
-    cv2.imwrite('disp_w5.pgm', n_map)
+    cv2.imwrite('dmap_1_w5_big.pgm', ndmap)
+    cv2.imwrite('disp_1_w5_big.pgm', n_map)
     # print(np.max(dmap), np.min(dmap))
     cv2.imshow('disp', n_map)
     cv2.imshow('dmap', ndmap)
